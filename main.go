@@ -1,12 +1,14 @@
 package main
 
 import (
+	"api/mypackage"
 	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -87,19 +89,55 @@ func sending(s chan<- string) {
 	s <- "Hello"
 }
 
-func portal1(channel1 chan string) {
-
+func prince(channel1 chan string) {
+	// for i := 0; i < 4; i++ {
+	// 	channel1 <- "hello prince"
+	// }
 	// time.Sleep(3 * time.Second)
-	channel1 <- "Welcome to channel 1"
+	channel1 <- "hello prince"
 }
 
 // function 2
-func portal2(channel2 chan string) {
+func deepak(channel2 chan string) {
 
-	// time.Sleep(9 * time.Second) 
-	channel2 <- "Welcome to channel 2"
+	// time.Sleep(3* time.Second)
+	channel2 <- "Hello deepak"
+}
+func init() {
+	fmt.Println("Welcome to init function")
+}
+
+func add(a, b int) int {
+	sum := a + b
+	return sum
+}
+
+// Variadic function to join strings
+func joinstr(elements ...string) string {
+	return strings.Join(elements, "-")
+}
+func operateOnNumbers(operation func(a, b int) int) {
+	result := operation(10, 20)
+	fmt.Println("The result of the operation is:", result)
+}
+
+func divide(a, b int) (int, int) {
+	quotient := a / b
+	remainder := a % b
+	return quotient, remainder
+}
+
+type Rectangle struct {
+    width, height float64
+}
+func (r Rectangle) Area() float64 {
+    return r.width * r.height
+}
+func (r Rectangle) Perimeter() float64 {
+    return 2 * (r.width + r.height)
 }
 func main() {
+	fmt.Println(mypackage.Greet("ravi"))
 	// var is used like global variable and := it is used inside function
 	// vaiable declaration with initial value
 	var student1 string = "John" //type is string
@@ -426,16 +464,97 @@ func main() {
 
 	R1 := make(chan string)
 	R2 := make(chan string)
-	go portal1(R1)
-	go portal2(R2)
+	go prince(R1)
+	go deepak(R2)
 	select {
 	case opt1 := <-R1:
-		fmt.Println("Portal 1:", opt1)
+		fmt.Println("prince :", opt1)
 	case opt2 := <-R2:
-		fmt.Println("Portal 2:", opt2)
+		fmt.Println("deepak :", opt2)
 	}
 
-	initDB() 
+	// user define function
+	fmt.Printf("Sum of two no: %d", add(12, 10))
+	fmt.Println()
+
+	// The function that is called with the varying number of arguments is known as variadic function.  it required one fixed argument at the starting after that it can accept any number of arguments.
+
+	// Syntax:  function function_name(para1, para2...type)type {// code...}
+
+	// declaration -    …type
+	//  it is useful when data comes from a single data structure (slice ,array, etc)
+
+	fmt.Println(joinstr("GEEK", "GFG"))
+
+	//  An anonymous function is a function which doesn’t contain any name
+	// It is useful when you want to create an inline function. also known as function literal.
+	// an anonymous function can form a closure
+
+	func() {
+
+		fmt.Println("Anonymous function")
+	}()
+	// When you assign a function to a variable, then the type of the variable is of function type and you can call that variable like a function call
+	func(ele string) {
+		fmt.Println(ele)
+	}("Assign variable to anoymous function")
+	// You can also return an anonymous function from another function  like clossure.
+	add := func(a, b int) int {
+		return a + b
+	}
+
+	// Pass the anonymous function to operateOnNumbers
+	// magine you have two friends who love playing with numbers. One friend, let’s call them "Adder," loves adding numbers together. Another friend, let's call them "Operator," loves telling others how to play with numbers.
+
+	// Now, Operator has a game where they take two numbers and ask a friend to do something with those numbers. Today, Operator wants to use Adder's special skill, which is adding numbers together.
+	operateOnNumbers(add)
+
+	// underscore (_) is used as a blank identifier. It's a special symbol that you can use when you want to ignore a value or a return result that you don't need.
+	// 1. Ignoring Return Values
+	// 2. Ignoring Unused Variables: value := 42 _ = value
+	// 3. Ignoring Imports: import _ "some/package/path"
+
+	quotient, _ := divide(10, 3) // Ignore the remainder
+	fmt.Println("Quotient:", quotient)
+
+	// In Go, the defer keyword is used to delay the execution of a function until the surrounding function returns. This can be incredibly useful for tasks that need to be done after a function finishes, such as cleaning up resources, closing files, or releasing locks.
+
+	// 	How defer Works:
+	// When you use defer, the specified function call is pushed onto a stack.
+	// After the surrounding function finishes, the deferred functions are executed in last-in, first-out (LIFO) order.
+
+	// Use Cases - Closing Files ,Handling Panics ,mutex to protect shared resources. defer helps ensure the mutex is unlocked even if an error occurs.
+
+	file, err := os.Open("hello.txt")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close() // Ensure the file is closed after function finishes
+
+	// Do something with the file
+	fmt.Println("File opened successfully")
+
+	// In Go, a method is a function with a special receiver argument. The receiver is a value or a pointer of a specific type that allows the function (method) to operate on that type. Methods are a way to associate functions with types, providing a way to define behavior for data types.
+	// func (receiver Type) methodName(parameters) returnType {
+	// 	// Method body
+	// }
+	// Method with struct type receiver
+	// Method with Non-Struct Type Receiver
+	// Methods with Pointer Receiver
+	// func (p *Type) method_name(...Type) Type {
+	// 	// Code
+	// 	}
+	// Method Can Accept both Pointer and Value
+	// 	Value Receivers: Use these when the method doesn't need to modify the receiver. It's a safer, read-only operation.
+	// Pointer Receivers: Use these when the method needs to modify the receiver or when copying the receiver is expensive (e.g., large structs).
+
+	
+	rect := Rectangle{width: 10, height: 5}
+	fmt.Println("Area:", rect.Area())
+    fmt.Println("Perimeter:", rect.Perimeter())
+
+	initDB()
 	http.HandleFunc("/postlogin", createLogin)
 	http.HandleFunc("/dellogin", deleteLogin)
 	http.HandleFunc("/updateLogin", updateLogin)
